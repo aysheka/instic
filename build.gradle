@@ -1,0 +1,129 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+if (hasProperty("teamcity")) {
+    project.ext.buildVersion = teamcity["build.number"]
+} else {
+    project.ext.buildVersion = '0.0.1'
+}
+
+version = project.ext.buildVersion
+group = 'com.fnklabs'
+
+println("App module version:" + project.ext.buildVersion)
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven { url "http://dl.bintray.com/akuznetsov/russianmorphology" }
+}
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url 'http://dl.bintray.com/jfrog/jfrog-jars' }
+    }
+    dependencies {
+        classpath(group: 'org.jfrog.buildinfo', name: 'build-info-extractor-gradle', version: '2.2.4')
+    }
+}
+
+configurations {
+    compile.exclude module: 'slf4j-log4j12'
+    compile.exclude module: 'hibernate-validator'
+}
+
+dependencies {
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-all:1.9.5'
+    testCompile 'org.openjdk.jmh:jmh-core:1.11.2'
+    testCompile 'org.openjdk.jmh:jmh-generator-annprocess:1.11.2'
+
+    compile 'com.intellij:annotations:12.0'
+
+    compile 'org.apache.commons:commons-io:1.3.2'
+    compile 'org.apache.commons:commons-lang3:3.4'
+
+    compile 'com.esotericsoftware:kryo:3.0.3'
+
+    compile 'com.fnklabs:fnklabs-metrics-codahale:0.1.5'
+    compile 'com.fnklabs:fnklabs-metrics-core:0.1.5'
+    compile 'com.fnklabs:fnklabs-draenei:0.5.3'
+
+    compile 'com.google.guava:guava:19.0'
+
+    compile 'com.typesafe:config:1.3.0'
+}
+
+jar {
+    baseName = 'fnklabs-instic'
+    version = project.ext.buildVersion
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.1'
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+
+            pom.project {
+                name 'draenei'
+                packaging 'jar'
+                description 'ORM for Cassandra but with distributed cache and analytics utils from package'
+                url 'https://github.com/fnklabs/instic'
+
+                scm {
+                    url 'scm:git@github.com:fnklabs/instic.git'
+                    connection 'scm:git@github.com:fnklabs/instic.git'
+                    developerConnection 'scm:git@github.com:fnklabs/instic.git'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'aysheka'
+                        name 'Alisher Alimov'
+                    }
+                }
+            }
+        }
+    }
+}
