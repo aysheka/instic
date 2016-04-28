@@ -3,10 +3,12 @@ Create/restore dump utils for cassandra
 
 ## About
 
-Inspired by current project [gianlucaborello/cassandradump](https://github.com/gianlucaborello/cassandradump)
+Inspired by current project [gianlucaborello/cassandradump](https://github.com/gianlucaborello/cassandradump) but written on java and fix some problems with UDT and performance 
 
 It's very bad idea to create dump for cassandra because such DB was not developed for current operation and it can store PB
  of data, so creating dump in single file on single machine is very bad idea. But current tools is good for dev environment to boot up some fixtures.
+ 
+ 
 
 ## Configuration
 
