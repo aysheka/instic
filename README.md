@@ -32,7 +32,7 @@ Where
   },
   "import": {
     "ddl": false, // restore schema on import operation. (Note that by default `system` keyspace will be used so user must hava enogh grants)
-    "dml": true   // restore schema on import operation
+    "dml": true   // restore data on import operation
   }
 }
 ```
